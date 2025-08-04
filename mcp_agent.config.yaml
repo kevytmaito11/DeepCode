@@ -2,7 +2,7 @@ $schema: ./schema/mcp-agent.config.schema.json
 
 # Default search server configuration
 # Options: "brave" or "bocha-mcp"
-default_search_server: "bocha-mcp"
+default_search_server: "brave"
 
 # Planning mode configuration
 # Options: "segmented" or "traditional"
@@ -30,10 +30,9 @@ mcp:
       # Use `npm -g root` to find the global node_modules path.`
       # command: "node"
       # args: ["c:/Program Files/nodejs/node_modules/@modelcontextprotocol/server-brave-search/dist/index.js"]
-      command: "npx"
-      args: ["-y", "@modelcontextprotocol/server-brave-search"]
+      command: "C:/Program Files/nodejs/node.exe"
+      args: ["C:/Users/valtt/AppData/Roaming/npm/node_modules/@modelcontextprotocol/server-brave-search/dist/index.js"]
       env:
-        # You can also place your BRAVE_API_KEY in the fastagent.secrets.yaml file.
         BRAVE_API_KEY: ""
     filesystem:
       # On windows update the command and arguments to use `node` and the absolute path to the server.
@@ -82,8 +81,7 @@ mcp:
 
 openai:
   # Secrets (API keys, etc.) are stored in an mcp_agent.secrets.yaml file which can be gitignored
-  #  default_model: "o3-mini"
-  default_model: "anthropic/claude-sonnet-4"
+  default_model: "gpt-4o-mini"
 
 
 anthropic:

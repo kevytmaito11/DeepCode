@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 DeepCode - CLI Application Main Program
-深度代码 - CLI应用主程序
+
 
 🧬 Open-Source Code Agent by Data Intelligence Lab @ HKU
 ⚡ Revolutionizing research reproducibility through collaborative AI
@@ -13,23 +13,23 @@ import asyncio
 import time
 import json
 
-# 禁止生成.pyc文件
+# Disable .pyc file generation
 os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
 
-# 添加项目根目录到路径
+# Add project root directory to path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-# 导入MCP应用和工作流
+# Import MCP application and workflows
 
 from cli.workflows import CLIWorkflowAdapter
 from cli.cli_interface import CLIInterface, Colors
 
 
 class CLIApp:
-    """CLI应用主类 - 升级版智能体编排引擎"""
+    """CLI main class - Upgraded agent orchestration engine"""
 
     def __init__(self):
         self.cli = CLIInterface()
@@ -39,26 +39,26 @@ class CLIApp:
         self.context = None
 
     async def initialize_mcp_app(self):
-        """初始化MCP应用 - 使用工作流适配器"""
+        """Initialize MCP application - using workflow adapter"""
         # Workflow adapter will handle MCP initialization
         return await self.workflow_adapter.initialize_mcp_app()
 
     async def cleanup_mcp_app(self):
-        """清理MCP应用 - 使用工作流适配器"""
+        """Clean up MCP application - using workflow adapter"""
         await self.workflow_adapter.cleanup_mcp_app()
 
     async def process_input(self, input_source: str, input_type: str):
-        """处理输入源（URL或文件）- 使用升级版智能体编排引擎"""
+        """Process input source (URL or file) - using upgraded agent orchestration engine"""
         try:
             self.cli.print_separator()
             self.cli.print_status(
                 "🚀 Starting intelligent agent orchestration...", "processing"
             )
 
-            # 显示处理阶段（根据配置决定）
+            # Display processing stages (depending on configuration)
             self.cli.display_processing_stages(0, self.cli.enable_indexing)
 
-            # 使用工作流适配器进行处理
+            # Use workflow adapter for processing
             result = await self.workflow_adapter.process_input_with_orchestration(
                 input_source=input_source,
                 input_type=input_type,
@@ -66,7 +66,7 @@ class CLIApp:
             )
 
             if result["status"] == "success":
-                # 显示完成状态
+                # Display completion status
                 final_stage = 8 if self.cli.enable_indexing else 5
                 self.cli.display_processing_stages(
                     final_stage, self.cli.enable_indexing
@@ -75,7 +75,7 @@ class CLIApp:
                     "🎉 Agent orchestration completed successfully!", "complete"
                 )
 
-                # 显示结果
+                # Display results
                 self.display_results(
                     result.get("analysis_result", ""),
                     result.get("download_result", ""),
@@ -88,7 +88,7 @@ class CLIApp:
                     "error",
                 )
 
-            # 添加到历史记录
+            # Add to history
             self.cli.add_to_history(input_source, result)
 
             return result
@@ -98,7 +98,7 @@ class CLIApp:
             self.cli.print_error_box("Agent Orchestration Error", error_msg)
             self.cli.print_status(f"Error during orchestration: {error_msg}", "error")
 
-            # 添加错误到历史记录
+            # Add error to history
             error_result = {"status": "error", "error": error_msg}
             self.cli.add_to_history(input_source, error_result)
 
@@ -111,10 +111,10 @@ class CLIApp:
         repo_result: str,
         pipeline_mode: str = "comprehensive",
     ):
-        """显示处理结果"""
+        """Display processing results"""
         self.cli.print_results_header()
 
-        # 显示流水线模式
+        # Display pipeline mode
         if pipeline_mode == "chat":
             mode_display = "💬 Chat Planning Mode"
         elif pipeline_mode == "comprehensive":
@@ -129,7 +129,7 @@ class CLIApp:
         print(f"{Colors.BOLD}{Colors.OKCYAN}📊 ANALYSIS PHASE RESULTS:{Colors.ENDC}")
         self.cli.print_separator("─", 79, Colors.CYAN)
 
-        # 尝试解析并格式化分析结果
+        # Try to parse and format analysis result
         try:
             if analysis_result.strip().startswith("{"):
                 parsed_analysis = json.loads(analysis_result)
@@ -161,7 +161,7 @@ class CLIApp:
         self.cli.print_separator("─", 79, Colors.GREEN)
         print(repo_result[:1000] + "..." if len(repo_result) > 1000 else repo_result)
 
-        # 尝试提取生成的代码目录信息
+        # Try to extract generated code directory info
         if "Code generated in:" in repo_result:
             code_dir = (
                 repo_result.split("Code generated in:")[-1].strip().split("\n")[0]
@@ -170,7 +170,7 @@ class CLIApp:
                 f"\n{Colors.BOLD}{Colors.YELLOW}📁 Generated Code Directory: {Colors.ENDC}{code_dir}"
             )
 
-        # 显示处理完成的工作流阶段
+        # Display completed workflow stages
         print(
             f"\n{Colors.BOLD}{Colors.OKCYAN}🔄 COMPLETED WORKFLOW STAGES:{Colors.ENDC}"
         )
@@ -199,17 +199,17 @@ class CLIApp:
         self.cli.print_separator()
 
     async def run_interactive_session(self):
-        """运行交互式会话"""
-        # 清屏并显示启动界面
+        """Run interactive session"""
+        # Clear screen and display startup interface
         self.cli.clear_screen()
         self.cli.print_logo()
         self.cli.print_welcome_banner()
 
-        # 初始化MCP应用
+        # Initialize MCP application
         await self.initialize_mcp_app()
 
         try:
-            # 主交互循环
+            # Main interaction loop
             while self.cli.is_running:
                 self.cli.create_menu()
                 choice = self.cli.get_user_input()
@@ -244,7 +244,7 @@ class CLIApp:
                         "Invalid choice. Please select U, F, T, C, H, or Q.", "warning"
                     )
 
-                # 询问是否继续
+                # Ask whether to continue
                 if self.cli.is_running and choice in ["u", "f", "t", "chat", "text"]:
                     if not self.cli.ask_continue():
                         self.cli.is_running = False
@@ -255,16 +255,16 @@ class CLIApp:
         except Exception as e:
             print(f"\n{Colors.FAIL}❌ Unexpected error: {str(e)}{Colors.ENDC}")
         finally:
-            # 清理资源
+            # Clean up resources
             await self.cleanup_mcp_app()
 
 
 async def main():
-    """主函数"""
+    """Main function"""
     start_time = time.time()
 
     try:
-        # 创建并运行CLI应用
+        # Create and run CLI application
         app = CLIApp()
         await app.run_interactive_session()
 
@@ -278,7 +278,7 @@ async def main():
             f"\n{Colors.BOLD}{Colors.CYAN}⏱️  Total runtime: {end_time - start_time:.2f} seconds{Colors.ENDC}"
         )
 
-        # 清理缓存文件
+        # Clean up cache files
         print(f"{Colors.YELLOW}🧹 Cleaning up cache files...{Colors.ENDC}")
         if os.name == "nt":  # Windows
             os.system(

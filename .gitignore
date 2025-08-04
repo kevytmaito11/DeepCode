@@ -64,3 +64,13 @@ run_indexer_with_filtering.py
 
 # Cline files
 memory-bank/
+
+# Local secrets
+mcp_agent.secrets.yaml
+
+#logs
+logs/
+
+#created code
+deepcode_lab/
+
