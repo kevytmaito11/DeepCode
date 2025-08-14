@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 DeepCode CLI - Open-Source Code Agent
+深度代码CLI - 开源代码智能体
 
 🧬 Data Intelligence Lab @ HKU
 ⚡ Revolutionizing Research Reproducibility through Multi-Agent Architecture
@@ -11,21 +12,21 @@ import sys
 import asyncio
 import argparse
 
-# Disable .pyc file generation
+# 禁止生成.pyc文件
 os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
 
-# Add project root directory to path
+# 添加项目根目录到路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-# Import CLI application
+# 导入CLI应用
 from cli.cli_app import CLIApp, Colors
 
 
 def print_enhanced_banner():
-    """Display enhanced startup banner"""
+    """显示增强版启动横幅"""
     banner = f"""
 {Colors.CYAN}╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -48,10 +49,10 @@ def print_enhanced_banner():
 
 
 def check_environment():
-    """Check runtime environment"""
+    """检查运行环境"""
     print(f"{Colors.CYAN}🔍 Checking environment...{Colors.ENDC}")
 
-    # Check Python version
+    # 检查Python版本
     if sys.version_info < (3, 8):
         print(
             f"{Colors.FAIL}❌ Python 3.8+ required. Current: {sys.version}{Colors.ENDC}"
@@ -60,7 +61,7 @@ def check_environment():
 
     print(f"{Colors.OKGREEN}✅ Python {sys.version.split()[0]} - OK{Colors.ENDC}")
 
-    # Check required modules
+    # 检查必要模块
     required_modules = [
         ("asyncio", "Async IO support"),
         ("pathlib", "Path handling"),
@@ -87,21 +88,27 @@ def check_environment():
 
 
 def parse_arguments():
-    """Parse command line arguments"""
+    """解析命令行参数"""
     parser = argparse.ArgumentParser(
         description="DeepCode CLI - Open-Source Code Agent by Data Intelligence Lab @ HKU",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""
 {Colors.BOLD}Examples:{Colors.ENDC}
-  {Colors.CYAN}python main_cli.py{Colors.ENDC}                    # Interactive mode
-  {Colors.CYAN}python main_cli.py --file paper.pdf{Colors.ENDC}     # Process file directly
-  {Colors.CYAN}python main_cli.py --url https://...{Colors.ENDC}    # Process URL directly
-  {Colors.CYAN}python main_cli.py --chat "Build a web app..."{Colors.ENDC} # Process chat requirements
-  {Colors.CYAN}python main_cli.py --optimized{Colors.ENDC}          # Use optimized mode
+  {Colors.CYAN}python main_cli.py{Colors.ENDC}                               # Interactive mode
+  {Colors.CYAN}python main_cli.py --file paper.pdf{Colors.ENDC}                # Process file directly
+  {Colors.CYAN}python main_cli.py --url https://...{Colors.ENDC}               # Process URL directly
+  {Colors.CYAN}python main_cli.py --chat "Build a web app..."{Colors.ENDC}     # Process chat requirements
+  {Colors.CYAN}python main_cli.py --optimized{Colors.ENDC}                     # Use optimized mode
+  {Colors.CYAN}python main_cli.py --disable-segmentation{Colors.ENDC}          # Disable document segmentation
+  {Colors.CYAN}python main_cli.py --segmentation-threshold 30000{Colors.ENDC}  # Custom segmentation threshold
 
 {Colors.BOLD}Pipeline Modes:{Colors.ENDC}
   {Colors.GREEN}Comprehensive{Colors.ENDC}: Full intelligence analysis with indexing
   {Colors.YELLOW}Optimized{Colors.ENDC}:     Fast processing without indexing
+
+{Colors.BOLD}Document Processing:{Colors.ENDC}
+  {Colors.BLUE}Smart Segmentation{Colors.ENDC}: Intelligent document segmentation for large papers
+  {Colors.MAGENTA}Supported Formats{Colors.ENDC}: PDF, DOCX, DOC, PPT, PPTX, XLS, XLSX, HTML, TXT, MD
         """,
     )
 
@@ -128,6 +135,19 @@ def parse_arguments():
     )
 
     parser.add_argument(
+        "--disable-segmentation",
+        action="store_true",
+        help="Disable intelligent document segmentation (use traditional full-document processing)",
+    )
+
+    parser.add_argument(
+        "--segmentation-threshold",
+        type=int,
+        default=50000,
+        help="Document size threshold (characters) to trigger segmentation (default: 50000)",
+    )
+
+    parser.add_argument(
         "--verbose", "-v", action="store_true", help="Enable verbose output"
     )
 
@@ -135,7 +155,7 @@ def parse_arguments():
 
 
 async def run_direct_processing(app: CLIApp, input_source: str, input_type: str):
-    """Direct processing mode (non-interactive)"""
+    """直接处理模式（非交互式）"""
     try:
         print(
             f"\n{Colors.BOLD}{Colors.CYAN}🚀 Starting direct processing mode...{Colors.ENDC}"
@@ -146,7 +166,7 @@ async def run_direct_processing(app: CLIApp, input_source: str, input_type: str)
             f"{Colors.CYAN}Mode: {'🧠 Comprehensive' if app.cli.enable_indexing else '⚡ Optimized'}{Colors.ENDC}"
         )
 
-        # Initialize application
+        # 初始化应用
         init_result = await app.initialize_mcp_app()
         if init_result["status"] != "success":
             print(
@@ -154,7 +174,7 @@ async def run_direct_processing(app: CLIApp, input_source: str, input_type: str)
             )
             return False
 
-        # Process input
+        # 处理输入
         result = await app.process_input(input_source, input_type)
 
         if result["status"] == "success":
@@ -176,14 +196,14 @@ async def run_direct_processing(app: CLIApp, input_source: str, input_type: str)
 
 
 async def main():
-    """Main function"""
-    # Parse command line arguments
+    """主函数"""
+    # 解析命令行参数
     args = parse_arguments()
 
-    # Display banner
+    # 显示横幅
     print_enhanced_banner()
 
-    # Check environment
+    # 检查环境
     if not check_environment():
         print(
             f"\n{Colors.FAIL}🚨 Environment check failed. Please fix the issues and try again.{Colors.ENDC}"
@@ -191,10 +211,10 @@ async def main():
         sys.exit(1)
 
     try:
-        # Create CLI application
+        # 创建CLI应用
         app = CLIApp()
 
-        # Set configuration
+        # 设置配置
         if args.optimized:
             app.cli.enable_indexing = False
             print(
@@ -205,10 +225,28 @@ async def main():
                 f"\n{Colors.GREEN}🧠 Comprehensive mode enabled - full intelligence analysis{Colors.ENDC}"
             )
 
-        # Check if direct processing mode
+        # Configure document segmentation settings
+        if hasattr(args, "disable_segmentation") and args.disable_segmentation:
+            print(
+                f"\n{Colors.MAGENTA}📄 Document segmentation disabled - using traditional processing{Colors.ENDC}"
+            )
+            app.segmentation_config = {
+                "enabled": False,
+                "size_threshold_chars": args.segmentation_threshold,
+            }
+        else:
+            print(
+                f"\n{Colors.BLUE}📄 Smart document segmentation enabled (threshold: {args.segmentation_threshold} chars){Colors.ENDC}"
+            )
+            app.segmentation_config = {
+                "enabled": True,
+                "size_threshold_chars": args.segmentation_threshold,
+            }
+
+        # 检查是否为直接处理模式
         if args.file or args.url or args.chat:
             if args.file:
-                # Validate file existence
+                # 验证文件存在
                 if not os.path.exists(args.file):
                     print(f"{Colors.FAIL}❌ File not found: {args.file}{Colors.ENDC}")
                     sys.exit(1)
@@ -216,7 +254,7 @@ async def main():
             elif args.url:
                 success = await run_direct_processing(app, args.url, "url")
             elif args.chat:
-                # Validate chat input length
+                # 验证chat输入长度
                 if len(args.chat.strip()) < 20:
                     print(
                         f"{Colors.FAIL}❌ Chat input too short. Please provide more detailed requirements (at least 20 characters){Colors.ENDC}"
@@ -226,7 +264,7 @@ async def main():
 
             sys.exit(0 if success else 1)
         else:
-            # Interactive mode
+            # 交互式模式
             print(f"\n{Colors.CYAN}🎮 Starting interactive mode...{Colors.ENDC}")
             await app.run_interactive_session()
 

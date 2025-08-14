@@ -22,8 +22,6 @@ from typing import Dict, Any, Optional, List
 
 # MCP Agent imports
 from mcp_agent.agents.agent import Agent
-from mcp_agent.workflows.llm.augmented_llm_anthropic import AnthropicAugmentedLLM
-from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
 
 # Local imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,76 +32,8 @@ from prompts.code_prompts import (
 from workflows.agents import CodeImplementationAgent
 from workflows.agents.memory_agent_concise import ConciseMemoryAgent
 from config.mcp_tool_definitions_index import get_mcp_tools
+from utils.llm_utils import get_preferred_llm_class, get_default_models
 # DialogueLogger removed - no longer needed
-
-
-def get_preferred_llm_class(config_path: str = "mcp_agent.secrets.yaml"):
-    """
-    Automatically select the LLM class based on API key availability in configuration.
-
-    Reads from YAML config file and returns AnthropicAugmentedLLM if anthropic.api_key
-    is available, otherwise returns OpenAIAugmentedLLM.
-
-    Args:
-        config_path: Path to the YAML configuration file
-
-    Returns:
-        class: The preferred LLM class
-    """
-    try:
-        # Try to read the configuration file
-        if os.path.exists(config_path):
-            with open(config_path, "r", encoding="utf-8") as f:
-                config = yaml.safe_load(f)
-
-            # Check for anthropic API key in config
-            anthropic_config = config.get("anthropic", {})
-            anthropic_key = anthropic_config.get("api_key", "")
-
-            if anthropic_key and anthropic_key.strip() and not anthropic_key == "":
-                # print("🤖 Using AnthropicAugmentedLLM (Anthropic API key found in config)")
-                return AnthropicAugmentedLLM
-            else:
-                # print("🤖 Using OpenAIAugmentedLLM (Anthropic API key not configured)")
-                return OpenAIAugmentedLLM
-        else:
-            print(f"🤖 Config file {config_path} not found, using OpenAIAugmentedLLM")
-            return OpenAIAugmentedLLM
-
-    except Exception as e:
-        print(f"🤖 Error reading config file {config_path}: {e}")
-        print("🤖 Falling back to OpenAIAugmentedLLM")
-        return OpenAIAugmentedLLM
-
-
-def get_default_models(config_path: str = "mcp_agent.config.yaml"):
-    """
-    Get default models from configuration file.
-
-    Args:
-        config_path: Path to the configuration file
-
-    Returns:
-        dict: Dictionary with 'anthropic' and 'openai' default models
-    """
-    try:
-        if os.path.exists(config_path):
-            with open(config_path, "r", encoding="utf-8") as f:
-                config = yaml.safe_load(f)
-
-            anthropic_model = config.get("anthropic", {}).get(
-                "default_model", "claude-sonnet-4-20250514"
-            )
-            openai_model = config.get("openai", {}).get("default_model", "o3-mini")
-
-            return {"anthropic": anthropic_model, "openai": openai_model}
-        else:
-            print(f"Config file {config_path} not found, using default models")
-            return {"anthropic": "claude-sonnet-4-20250514", "openai": "o3-mini"}
-
-    except Exception as e:
-        print(f"Error reading config file {config_path}: {e}")
-        return {"anthropic": "claude-sonnet-4-20250514", "openai": "o3-mini"}
 
 
 class CodeImplementationWorkflowWithIndex:
@@ -473,8 +403,6 @@ Requirements:
                     "Analysis loop detected and corrective guidance provided"
                 )
 
-            # Round completed
-
             # Record file implementations in memory agent (for the current round)
             for file_info in code_agent.get_implementation_summary()["completed_files"]:
                 memory_agent.record_file_implementation(file_info["file"])
@@ -504,7 +432,6 @@ Requirements:
                     "Emergency message trim - applying concise memory optimization"
                 )
 
-                # Apply emergency memory optimization
                 current_system_message = code_agent.get_system_prompt()
                 files_implemented_count = code_agent.get_files_implemented_count()
                 messages = memory_agent.apply_memory_optimization(
@@ -604,7 +531,7 @@ Requirements:
                 try:
                     await client.chat.completions.create(
                         model=self.default_models["openai"],
-                        max_tokens=10,
+                        max_tokens=20,
                         messages=[{"role": "user", "content": "test"}],
                     )
                 except Exception as e:
@@ -612,7 +539,7 @@ Requirements:
                         # Retry with max_completion_tokens for models that require it
                         await client.chat.completions.create(
                             model=self.default_models["openai"],
-                            max_completion_tokens=10,
+                            max_completion_tokens=20,
                             messages=[{"role": "user", "content": "test"}],
                         )
                     else:
@@ -705,7 +632,7 @@ Requirements:
         openai_messages = [{"role": "system", "content": system_message}]
         openai_messages.extend(messages)
 
-        # Try max_tokens and temperature first, fallback to max_completion_tokens without temperature if unsupported
+        # Try max_tokens first, fallback to max_completion_tokens if unsupported
         try:
             response = await client.chat.completions.create(
                 model=self.default_models["openai"],
@@ -716,7 +643,7 @@ Requirements:
             )
         except Exception as e:
             if "max_tokens" in str(e) and "max_completion_tokens" in str(e):
-                # Retry with max_completion_tokens and no temperature for models that require it
+                # Retry with max_completion_tokens for models that require it
                 response = await client.chat.completions.create(
                     model=self.default_models["openai"],
                     messages=openai_messages,
